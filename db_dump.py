@@ -32,7 +32,7 @@ for play in play_history:
     try:
         cursor.execute(add_play, play)
         cnx.commit()
-	i += 1
+        i += 1
     except:
         pass
 
