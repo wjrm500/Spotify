@@ -4,15 +4,6 @@ import os
 
 from main import GetData
 
-# import ctypes, sys
-
-# def is_admin():
-#     try:
-#         return ctypes.windll.shell32.IsUserAnAdmin()
-#     except:
-#         return False
-
-# if is_admin():
 command = "net start mysql80"
 os.system(command)
 
@@ -21,10 +12,10 @@ print('Loading last 50 Spotify plays into local MySQL database...')
 load_dotenv()
 
 cnx = mysql.connector.connect(
-    user =  os.environ.get('DB_USER'),
+    user     = os.environ.get('DB_USER'),
     password = os.environ.get('DB_PASSWORD'),
-    host = os.environ.get('DB_HOST'),
-    port = os.environ.get('DB_PORT')
+    host     = os.environ.get('DB_HOST'),
+    port     = os.environ.get('DB_PORT')
 )
 
 add_play = (
