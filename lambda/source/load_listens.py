@@ -1,11 +1,11 @@
-import mysql.connector
+import package.mysql.connector as mysql
 import os
 
 from Spotify import Spotify
 
 def handler(event, context):
     print('Loading last 50 Spotify plays into MySQL database...')
-    cnx = mysql.connector.connect(
+    cnx = mysql.connect(
         user     = os.environ.get('DB_USER'),
         password = os.environ.get('DB_PASSWORD'),
         host     = os.environ.get('DB_HOST'),

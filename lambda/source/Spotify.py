@@ -1,4 +1,5 @@
-import requests
+import package.requests as requests
+
 from secrets import *
 from refresh import *
 
