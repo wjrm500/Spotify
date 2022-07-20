@@ -20,11 +20,11 @@ resource "aws_iam_role_policy_attachment" "terraform_lambda_policy" {
 }
 
 resource "aws_lambda_function" "spotify_lambda" {
-  filename         = "../test_lambda.zip"
-  function_name    = "test_lambda"
+  filename         = "../lambda/zip/load_listens.zip"
+  function_name    = "load_listens"
   role             = aws_iam_role.iam_for_lambda.arn
-  handler          = "test_lambda.handler"
-  source_code_hash = filebase64sha256("../test_lambda.py")
+  handler          = "load_listens.handler"
+  source_code_hash = filebase64sha256("../lambda/source/load_listens.py")
   runtime          = "python3.8"
   environment {
     variables = {
@@ -35,6 +35,6 @@ resource "aws_lambda_function" "spotify_lambda" {
 
 data "archive_file" "zip_spotify_lambda" {
   type        = "zip"
-  source_file = "../test_lambda.py"
-  output_path = "../test_lambda.zip"
+  source_dir = "../lambda/source/"
+  output_path = "../lambda/zip/load_listens.zip"
 }

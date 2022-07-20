@@ -1,9 +1,8 @@
-import json
 import requests
 from secrets import *
 from refresh import *
 
-class GetData:
+class Spotify:
     def __init__(self):
         self.user_id = spotify_user_id
         refreshCaller = Refresh()
