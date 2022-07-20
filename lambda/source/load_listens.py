@@ -1,4 +1,3 @@
-from dotenv import load_dotenv
 import mysql.connector
 import os
 
@@ -6,7 +5,6 @@ from Spotify import Spotify
 
 def handler(event, context):
     print('Loading last 50 Spotify plays into MySQL database...')
-    load_dotenv()
     cnx = mysql.connector.connect(
         user     = os.environ.get('DB_USER'),
         password = os.environ.get('DB_PASSWORD'),

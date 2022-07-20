@@ -19,7 +19,7 @@ resource "aws_iam_role_policy_attachment" "terraform_lambda_policy" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
-resource "aws_lambda_function" "spotify_lambda" {
+resource "aws_lambda_function" "lambda_load_listens" {
   filename         = "../lambda/zip/load_listens.zip"
   function_name    = "load_listens"
   role             = aws_iam_role.iam_for_lambda.arn
