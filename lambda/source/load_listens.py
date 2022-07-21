@@ -1,15 +1,16 @@
-import package.mysql.connector as mysql
+import mysql.connector as mysql
 import os
 
 from Spotify import Spotify
 
 def handler(event, context):
     print('Loading last 50 Spotify plays into MySQL database...')
+    print('OS environ:\n', os.environ)
     cnx = mysql.connect(
         user     = os.environ.get('DB_USER'),
         password = os.environ.get('DB_PASSWORD'),
         host     = os.environ.get('DB_HOST'),
-        port     = os.environ.get('DB_PORT')
+        port     = int(os.environ.get('DB_PORT'))
     )
     add_play = (
         "INSERT INTO spotify.spotify (`datetime`, artist, album, song)"

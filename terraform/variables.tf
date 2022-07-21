@@ -3,7 +3,7 @@ variable "DB_HOST" {
 }
 
 variable "DB_PORT" {
-  type = string
+  type = number
 }
 
 variable "DB_USER" {
@@ -13,4 +13,12 @@ variable "DB_USER" {
 variable "DB_PASSWORD" {
   type      = string
   sensitive = true
+}
+
+variable "VPC_SUBNET_IDS" {
+    type = list(string)
+}
+
+variable "VPC_SECURITY_GROUP_IDS" {
+    type = list(string)
 }

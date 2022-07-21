@@ -15,6 +15,3 @@ class Refresh():
             )
         response_json = response.json()
         return response_json["access_token"]
-
-a = Refresh()
-a.refresh()
