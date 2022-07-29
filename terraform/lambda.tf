@@ -14,6 +14,10 @@ resource "aws_lambda_layer_version" "lambda_layer" {
   filename   = "../lambda/zip/layer.zip"
   layer_name = "layer"
   compatible_runtimes = ["python3.8"]
+  source_code_hash = "${data.archive_file.zip_lambda_layer.output_base64sha256}"
+  depends_on = [
+    data.archive_file.zip_lambda_layer
+  ]
 }
 
 resource "aws_lambda_function" "lambda_load_listens" {
@@ -36,5 +40,8 @@ resource "aws_lambda_function" "lambda_load_listens" {
     subnet_ids         = var.VPC_SUBNET_IDS
     security_group_ids = var.VPC_SECURITY_GROUP_IDS
   }
-  timeout = 5
+  timeout = 120
+  depends_on = [
+    data.archive_file.zip_lambda_load_listens
+  ]
 }
