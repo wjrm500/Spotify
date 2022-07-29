@@ -7,3 +7,5 @@ __pycache__/
 *.zip
 todos.txt
 */package/*
+venv/
+lambda/dependencies/
