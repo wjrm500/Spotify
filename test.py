@@ -14,4 +14,4 @@ sql = "SELECT * FROM spotify.spotify"
 cursor = cnx.cursor()
 cursor.execute(sql)
 result = cursor.fetchall()
-a = 1 # Test
+print(result)
