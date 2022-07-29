@@ -4,8 +4,7 @@ import os
 from Spotify import Spotify
 
 def handler(event, context):
-    print('Loading last 50 Spotify plays into MySQL database...')
-    print('OS environ:\n', os.environ)
+    print('Connecting to database...')
     cnx = mysql.connect(
         user     = os.environ.get('DB_USER'),
         password = os.environ.get('DB_PASSWORD'),
@@ -23,6 +22,7 @@ def handler(event, context):
     i = 0
     for play in play_history:
         try:
+            print("Storing play number " + str(i + 1))
             cursor.execute(add_play, play)
             cnx.commit()
             i += 1
