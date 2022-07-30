@@ -13,14 +13,14 @@ def s3_handler(event, context):
     recent_listens = spotify.get_recent_listens()
     try:
         obj = s3.get_object(Bucket = BUCKET, Key = OBJECT_KEY)
+        update_play_history(obj['Body'], recent_listens)
     except ClientError as e:
         if e.response.get('Error').get('Code') == 'NoSuchKey':
             print(f'No object found in bucket {BUCKET} with key {OBJECT_KEY}')
             put_play_history(recent_listens)
         else:
             print('Unknown client error')
-            raise e
-    update_play_history(obj['Body'], recent_listens)
+            raise e    
 
 def put_play_history(recent_listens):
     body = json.dumps(recent_listens).encode('utf-8')
