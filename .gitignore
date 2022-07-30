@@ -9,3 +9,4 @@ todos.txt
 */package/*
 venv/
 lambda/dependencies/
+*.tfvars
