@@ -12,8 +12,10 @@ s3 = boto3.client('s3')
 def s3_handler(event, context):
     recent_listens = spotify.get_recent_listens()
     try:
+        print('Getting play history from S3...')
         obj = s3.get_object(Bucket = BUCKET, Key = OBJECT_KEY)
-        update_play_history(obj['Body'], recent_listens)
+        play_history = json.loads(obj['Body'].read().decode('utf-8'))
+        update_play_history(play_history, recent_listens)
     except ClientError as e:
         if e.response.get('Error').get('Code') == 'NoSuchKey':
             print(f'No object found in bucket {BUCKET} with key {OBJECT_KEY}')
@@ -31,4 +33,4 @@ def put_play_history(recent_listens):
         print('Unknown client error')
 
 def update_play_history(play_history, recent_listens):
-    pass
+    print(play_history)
