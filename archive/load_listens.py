@@ -35,9 +35,9 @@ def rds_handler(event, context):
     cursor.execute(create_table)
     cnx.commit()
     spotify = Spotify()
-    play_history = spotify.get_play_history()
+    listen_history = spotify.get_listen_history()
     i = 0
-    for play in play_history:
+    for play in listen_history:
         try:
             print("Storing play number " + str(i + 1))
             cursor.execute(add_play, play)

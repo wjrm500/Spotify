@@ -10,3 +10,4 @@ todos.txt
 venv/
 lambda/dependencies/
 *.tfvars
+*.sjon

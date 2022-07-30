@@ -56,8 +56,8 @@ class Spotify:
             }
         )
         response_json = response.json()
-        print(str(len(response_json["items"])) + ' plays to add...')
-        play_history = []
+        print(str(len(response_json["items"])) + ' listens found...')
+        listen_history = []
         for i, j in enumerate(response_json["items"], 1):
             try:
                 datetime = j["played_at"]
@@ -76,7 +76,7 @@ class Spotify:
                     "song": song
                 }
                 print(f'({i}) Adding {play["song"]} by {play["artist"]} ({play["datetime"]})')
-                play_history.append(play)
+                listen_history.append(play)
             except:
                 pass
-        return play_history
+        return listen_history
