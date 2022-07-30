@@ -46,7 +46,7 @@ class Spotify:
         print(playlist)
         print(len(playlist))
 
-    def get_play_history(self):
+    def get_recent_listens(self):
         query = "https://api.spotify.com/v1/me/player/recently-played?limit=50"
         print("Getting data from Spotify...")
         response = requests.get(query,
