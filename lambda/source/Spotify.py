@@ -1,3 +1,4 @@
+import hashlib
 import requests
 
 from secrets import *
@@ -66,7 +67,9 @@ class Spotify:
                 artist = j["track"]["album"]["artists"][0]["name"]
                 album = j["track"]["album"]["name"]
                 song = j["track"]["name"]
+                listen_id = hashlib.md5((artist + album + song + datetime).encode()).hexdigest()
                 play = {
+                    "listen_id": listen_id,
                     "datetime": datetime,
                     "artist": artist,
                     "album": album,
