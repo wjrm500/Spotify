@@ -33,4 +33,9 @@ def put_play_history(recent_listens):
         print('Unknown client error')
 
 def update_play_history(play_history, recent_listens):
-    print(play_history)
+    play_history_listen_ids = [x['listen_id'] for x in play_history]
+    for recent_listen in recent_listens:
+        if recent_listen['listen_id'] not in play_history_listen_ids:
+            play_history.insert(0, recent_listen)
+    body = json.dumps(play_history).encode('utf-8')
+    s3.put_object(Bucket = BUCKET, Key = OBJECT_KEY, Body = body)
