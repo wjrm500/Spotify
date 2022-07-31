@@ -9,7 +9,7 @@ OBJECT_KEY = 'play-history'
 spotify = Spotify()
 s3 = boto3.client('s3')
 
-def s3_handler(event, context):
+def handler(event, context):
     recent_listens = spotify.get_recent_listens()
     try:
         print('Getting listen history from S3...')
