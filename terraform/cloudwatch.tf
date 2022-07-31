@@ -17,3 +17,19 @@ resource "aws_lambda_permission" "allow_cloudwatch_to_trigger_lambda" {
     principal     = "events.amazonaws.com"
     source_arn    = aws_cloudwatch_event_rule.trigger_spotify_lambda.arn
 }
+
+resource "aws_cloudwatch_metric_alarm" "spotify_lambda_failed" {
+  alarm_name                = "spotify-lambda-failed"
+  comparison_operator       = "GreaterThanOrEqualToThreshold"
+  evaluation_periods        = "1"
+  metric_name               = "Errors"
+  namespace                 = "AWS/Lambda"
+  period                    = "86400" # 1 day
+  statistic                 = "Average"
+  threshold                 = "1"
+  alarm_description         = "This alarm checks if the Spotify Lambda failed in the last day"
+  alarm_actions             = [aws_sns_topic.send_email_topic.arn]
+  dimensions                = {
+    function_name = aws_lambda_function.lambda_load_listens.function_name
+  }
+}
