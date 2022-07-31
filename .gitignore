@@ -11,3 +11,4 @@ venv/
 lambda/dependencies/
 *.tfvars
 *.json
+*.drawio

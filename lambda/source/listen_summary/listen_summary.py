@@ -2,10 +2,12 @@ import boto3
 from collections import Counter
 from datetime import datetime, timedelta
 import json
+import os
 
 BUCKET = 'wjrm500-spotify'
 OBJECT_KEY = 'play-history'
 s3 = boto3.client('s3')
+ses = boto3.client('ses')
 
 def handler(event, context):
     print('Getting listen history from S3...')
@@ -16,3 +18,22 @@ def handler(event, context):
     artist_plays = Counter([x['artist'] for x in last_week_listens])
     top_artists = artist_plays.most_common(5)
     email_content = 'Your five most played artists over the past week are:\n' + '\n'.join(x[0] + ': ' + str(x[1]) for x in top_artists)
+    resp = ses.verify_email_identity(EmailAddress = os.environ.get('email'))
+    print(resp)
+    resp = ses.send_email(
+        Destination = {
+            'ToAddresses': [os.environ.get('email')]
+        },
+        Message = {
+            'Subject': {
+                'Data': 'Test'
+            },
+            'Body': {
+                'Text': {
+                    'Data': email_content
+                }
+            }
+        },
+        Source = os.environ.get('email')
+    )
+    print(resp)
