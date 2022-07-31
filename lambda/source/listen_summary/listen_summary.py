@@ -17,7 +17,8 @@ def handler(event, context):
     last_week_listens = [x for x in listen_history if datetime.strptime(x['datetime'], '%Y-%m-%d %H:%M:%S') > one_week_ago]
     artist_plays = Counter([x['artist'] for x in last_week_listens])
     top_artists = artist_plays.most_common(5)
-    email_content = 'Your five most played artists over the past week are:\n' + '\n'.join(x[0] + ': ' + str(x[1]) for x in top_artists)
+    email_subject = 'Your Spotify weekly digest'
+    email_content = 'Your five most played artists over the past week are...\n\n' + '\n'.join(x[0] + ': ' + str(x[1]) for x in top_artists)
     resp = ses.verify_email_identity(EmailAddress = os.environ.get('email'))
     print(resp)
     resp = ses.send_email(
@@ -26,7 +27,7 @@ def handler(event, context):
         },
         Message = {
             'Subject': {
-                'Data': 'Test'
+                'Data': email_subject
             },
             'Body': {
                 'Text': {
