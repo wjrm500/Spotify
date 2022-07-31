@@ -20,7 +20,7 @@ resource "aws_iam_role_policy_attachment" "allow_vpc_access_execution_policy_att
 }
 
 resource "aws_iam_policy" "allow_s3_access_policy" {
-    name = "policy"
+    name = "allow-s3-access-policy"
     description = "Allow Lambda to access S3"
     policy = <<EOF
 {
@@ -51,7 +51,7 @@ resource "aws_iam_role_policy_attachment" "allow_s3_access_policy_attachment" {
 }
 
 resource "aws_iam_policy" "allow_ses_access_policy" {
-    name = "policy"
+    name = "allow-ses-access-policy"
     description = "Allow Lambda to access SES"
     policy = <<EOF
 {
@@ -61,7 +61,7 @@ resource "aws_iam_policy" "allow_ses_access_policy" {
       "Effect": "Allow",
       "Action": [
         "ses:SendEmail",
-        "ses:SendRawEmail"
+        "ses:VerifyEmailIdentity"
       ],
       "Resource": "*"
     }

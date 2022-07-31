@@ -32,4 +32,9 @@ resource "aws_lambda_function" "listen_summary_lambda" {
   depends_on = [
     data.archive_file.zip_listen_summary_lambda
   ]
+  environment {
+    variables = {
+      email = var.email
+    }
+  }
 }
