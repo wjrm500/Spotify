@@ -43,3 +43,4 @@ def update_listen_history(listen_history, recent_listens):
     body = json.dumps(listen_history).encode('utf-8')
     s3.put_object(Bucket = BUCKET, Key = OBJECT_KEY, Body = body)
     print(f'{listens_added} new listens added!')
+    print('Total number of listens logged: ' + str(len(listen_history)))
