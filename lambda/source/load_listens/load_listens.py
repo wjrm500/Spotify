@@ -36,7 +36,7 @@ def put_listen_history(recent_listens):
 def update_listen_history(listen_history, recent_listens):
     listen_history_listen_ids = [x['listen_id'] for x in listen_history]
     listens_added = 0
-    for recent_listen in recent_listens:
+    for recent_listen in reversed(recent_listens):
         if recent_listen['listen_id'] not in listen_history_listen_ids:
             listen_history.insert(0, recent_listen)
             listens_added += 1
