@@ -11,4 +11,6 @@ venv/
 lambda/dependencies/
 *.tfvars
 *.json
-*.drawio
+*.tfstate*
+*.exe
+*.terraform.lock.hcl

@@ -29,13 +29,6 @@ resource "aws_iam_policy" "allow_s3_access_policy" {
     {
       "Effect": "Allow",
       "Action": [
-        "logs:*"
-      ],
-      "Resource": "arn:aws:logs:*:*:*"
-    },
-    {
-      "Effect": "Allow",
-      "Action": [
         "s3:*"
       ],
       "Resource": "arn:aws:s3:::*"
@@ -47,7 +40,7 @@ EOF
 
 resource "aws_iam_role_policy_attachment" "allow_s3_access_policy_attachment" {
   role       = aws_iam_role.iam_for_lambda.name
-  policy_arn = aws_iam_policy.allow_s3_access_policy.arn
+  policy_arn = "arn:aws:iam::364363339457:policy/allow-s3-access-policy"
 }
 
 resource "aws_iam_policy" "allow_ses_access_policy" {
@@ -72,5 +65,5 @@ EOF
 
 resource "aws_iam_role_policy_attachment" "allow_ses_access_policy_attachment" {
   role       = aws_iam_role.iam_for_lambda.name
-  policy_arn = aws_iam_policy.allow_ses_access_policy.arn
+  policy_arn = "arn:aws:iam::364363339457:policy/allow-ses-access-policy"
 }
