@@ -6,6 +6,7 @@
             <br>
             <table cellpadding="0" cellspacing="0" width="300">
                 <tr>
+                    <td></td>
                     <td style="font-weight:bold; padding:2px">Artist</td>
                     <td style="font-weight:bold; padding:2px">Plays</td>
                 </tr>
@@ -13,6 +14,7 @@
                 {% for artist, plays in artists_list %}
                     {% set ns.foo = not ns.foo %}
                     <tr style="background-color: {{ 'lightgrey' if ns.foo else 'white' }}">
+                        <td style="padding:2px">{{ loop.index }}</td>
                         <td style="padding:2px">{{ artist }}</td>
                         <td style="padding:2px">{{ plays }}</td>
                     </tr>
