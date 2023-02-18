@@ -13,7 +13,7 @@ OBJECT_KEY = "play-history"
 s3 = boto3.client("s3")
 ses = boto3.client("ses")
 
-how_many = 5
+how_many = 50
 
 class ListenField(str, Enum):
     ARTIST = "artist"
@@ -102,7 +102,6 @@ def get_text_content(data):
 
 def generate_email():
     data = get_data()
-    print(get_text_content(data))
     return {
         "subject": get_email_subject(data[ListenField.ARTIST][TimeFrame.LAST_WEEK]),
         "html_content": get_html_content(data),
