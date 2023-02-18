@@ -1,80 +1,28 @@
 <!DOCTYPE html>
 <html>
     <body style="font-family: Arial">
-        <table border="0" cellspacing="0" cellpadding="0" width="100%" style="max-width:1500px">
-            <tr>
-                <td width="32%" valign="top">
-                    {% for time_frame, artist_list in artist.items() %}
-                        <div>Your {{ artist_list|length }} most-played artists of {{ time_frame }} are:</div>
-                        <br>
-                        <table border="0" cellspacing="0" cellpadding="0" width="100%">
-                            <tr>
-                                <td style="padding:2px">#</td>
-                                <td style="padding:2px; font-weight:bold;">Artist</td>
-                                <td style="padding:2px; font-weight:bold;">Plays</td>
-                            </tr>
-                            {% set ns = namespace(foo = false) %}
-                            {% for artist, plays in artist_list %}
-                                {% set ns.foo = not ns.foo %}
-                                <tr style="background-color: {{ 'lightgrey' if ns.foo else 'white' }}">
-                                    <td style="padding:2px">{{ loop.index }}</td>
-                                    <td style="padding:2px">{{ artist }}</td>
-                                    <td style="padding:2px">{{ plays }}</td>
-                                </tr>
-                            {% endfor %}
-                        </table>
-                        <br>
+        {% for field_name, field in [("Artist", artist), ("Album", album), ("Song", song)] %}
+            {% for time_frame, field_list in field.items() %}
+                <div>Your {{ field_list|length }} most-played {{ field_name|lower }}s of {{ time_frame }} are:</div>
+                <br>
+                <table border="0" cellspacing="0" cellpadding="0" width="500px">
+                    <tr>
+                        <td style="padding:2px">#</td>
+                        <td style="padding:2px; font-weight:bold;">{{ field_name }}</td>
+                        <td style="padding:2px; font-weight:bold;">Plays</td>
+                    </tr>
+                    {% set ns = namespace(foo = false) %}
+                    {% for field_value, plays in field_list %}
+                        {% set ns.foo = not ns.foo %}
+                        <tr style="background-color: {{ 'lightgrey' if ns.foo else 'white' }}">
+                            <td style="padding:2px">{{ loop.index }}</td>
+                            <td style="padding:2px">{{ field_value }}</td>
+                            <td style="padding:2px">{{ plays }}</td>
+                        </tr>
                     {% endfor %}
-                </td>
-                <td width="2%"></td>
-                <td width="32%" valign="top">
-                    {% for time_frame, album_list in album.items() %}
-                        <div>Your {{ album_list|length }} most-played albums of {{ time_frame }} are:</div>
-                        <br>
-                        <table border="0" cellspacing="0" cellpadding="0" width="100%">
-                            <tr>
-                                <td style="padding:2px">#</td>
-                                <td style="padding:2px; font-weight:bold;">Album</td>
-                                <td style="padding:2px; font-weight:bold;">Plays</td>
-                            </tr>
-                            {% set ns = namespace(foo = false) %}
-                            {% for album, plays in album_list %}
-                                {% set ns.foo = not ns.foo %}
-                                <tr style="background-color: {{ 'lightgrey' if ns.foo else 'white' }}">
-                                    <td style="padding:2px">{{ loop.index }}</td>
-                                    <td style="padding:2px">{{ album }}</td>
-                                    <td style="padding:2px">{{ plays }}</td>
-                                </tr>
-                            {% endfor %}
-                        </table>
-                        <br>
-                    {% endfor %}
-                </td>
-                <td width="2%"></td>
-                <td width="32%" valign="top">
-                    {% for time_frame, song_list in song.items() %}
-                        <div>Your {{ song_list|length }} most-played songs of {{ time_frame }} are:</div>
-                        <br>
-                        <table border="0" cellspacing="0" cellpadding="0" width="100%">
-                            <tr>
-                                <td style="padding:2px">#</td>
-                                <td style="padding:2px; font-weight:bold;">Song</td>
-                                <td style="padding:2px; font-weight:bold;">Plays</td>
-                            </tr>
-                            {% set ns = namespace(foo = false) %}
-                            {% for song, plays in song_list %}
-                                {% set ns.foo = not ns.foo %}
-                                <tr style="background-color: {{ 'lightgrey' if ns.foo else 'white' }}">
-                                    <td style="padding:2px">{{ loop.index }}</td>
-                                    <td style="padding:2px">{{ song }}</td>
-                                    <td style="padding:2px">{{ plays }}</td>
-                                </tr>
-                            {% endfor %}
-                        </table>
-                        <br>
-                    {% endfor %}
-                </td>
-            </tr>
-        </table>
+                </table>
+                <br>
+            {% endfor %}
+        {% endfor %}
     </body>
 </html>
