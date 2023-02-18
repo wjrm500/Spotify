@@ -9,6 +9,7 @@
                         <br>
                         <table border="0" cellspacing="0" cellpadding="0" width="100%">
                             <tr>
+                                <td style="padding:2px">#</td>
                                 <td style="padding:2px; font-weight:bold;">Artist</td>
                                 <td style="padding:2px; font-weight:bold;">Plays</td>
                             </tr>
@@ -16,6 +17,7 @@
                             {% for artist, plays in artist_list %}
                                 {% set ns.foo = not ns.foo %}
                                 <tr style="background-color: {{ 'lightgrey' if ns.foo else 'white' }}">
+                                    <td style="padding:2px">{{ loop.index }}</td>
                                     <td style="padding:2px">{{ artist }}</td>
                                     <td style="padding:2px">{{ plays }}</td>
                                 </tr>
@@ -31,6 +33,7 @@
                         <br>
                         <table border="0" cellspacing="0" cellpadding="0" width="100%">
                             <tr>
+                                <td style="padding:2px">#</td>
                                 <td style="padding:2px; font-weight:bold;">Album</td>
                                 <td style="padding:2px; font-weight:bold;">Plays</td>
                             </tr>
@@ -38,6 +41,7 @@
                             {% for album, plays in album_list %}
                                 {% set ns.foo = not ns.foo %}
                                 <tr style="background-color: {{ 'lightgrey' if ns.foo else 'white' }}">
+                                    <td style="padding:2px">{{ loop.index }}</td>
                                     <td style="padding:2px">{{ album }}</td>
                                     <td style="padding:2px">{{ plays }}</td>
                                 </tr>
@@ -53,6 +57,7 @@
                         <br>
                         <table border="0" cellspacing="0" cellpadding="0" width="100%">
                             <tr>
+                                <td style="padding:2px">#</td>
                                 <td style="padding:2px; font-weight:bold;">Song</td>
                                 <td style="padding:2px; font-weight:bold;">Plays</td>
                             </tr>
@@ -60,6 +65,7 @@
                             {% for song, plays in song_list %}
                                 {% set ns.foo = not ns.foo %}
                                 <tr style="background-color: {{ 'lightgrey' if ns.foo else 'white' }}">
+                                    <td style="padding:2px">{{ loop.index }}</td>
                                     <td style="padding:2px">{{ song }}</td>
                                     <td style="padding:2px">{{ plays }}</td>
                                 </tr>
