@@ -3,7 +3,7 @@
     <body style="font-family: Arial">
         <table border="0" cellspacing="0" cellpadding="0" width="100%">
             <tr>
-                <td width="33%" valign="top">
+                <td width="32%" valign="top">
                     {% for timeframe, artists_list in artist %}
                         <div>Your {{ artists_list|length }} most-played artists {{ timeframe }} are:</div>
                         <br>
@@ -24,7 +24,8 @@
                         <br>
                     {% endfor %}
                 </td>
-                <td width="33%" valign="top">
+                <td width="2%"></td>
+                <td width="32%" valign="top">
                     {% for timeframe, albums_list in album %}
                         <div>Your {{ albums_list|length }} most-played albums {{ timeframe }} are:</div>
                         <br>
@@ -45,7 +46,8 @@
                         <br>
                     {% endfor %}
                 </td>
-                <td width="33%" valign="top">
+                <td width="2%"></td>
+                <td width="32%" valign="top">
                     {% for timeframe, songs_list in song %}
                         <div>Your {{ songs_list|length }} most-played songs {{ timeframe }} are:</div>
                         <br>
