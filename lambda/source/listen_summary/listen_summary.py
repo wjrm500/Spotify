@@ -7,7 +7,6 @@ import os
 from enum import Enum
 from os.path import dirname, abspath
 import functools
-import textwrap
 
 BUCKET = "wjrm500-spotify"
 OBJECT_KEY = "play-history"
