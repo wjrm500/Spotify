@@ -7,6 +7,7 @@ import os
 from enum import Enum
 from os.path import dirname, abspath
 import functools
+import textwrap
 
 BUCKET = "wjrm500-spotify"
 OBJECT_KEY = "play-history"
@@ -65,22 +66,44 @@ def denumify_dict(d):
 
 def get_html_content(data):
     environment = jj2.Environment(loader = jj2.FileSystemLoader(dirname(abspath(__file__))))
-    template = environment.get_template("new_email_template.html")
+    template = environment.get_template("email_template.html")
     data = denumify_dict(data)
     return template.render(**data)
 
 def get_text_content(data):
-    return None
-
-    # return "Your {} most played artists over the past week are:\n\n{}\n\nYour {} most played artists of all time are:{}".format(
-    #     len(last_week_top_artists),
-    #     "\n".join("{}: {}".format(x[0], str(x[1])) for x in last_week_top_artists),
-    #     len(all_time_top_artists),
-    #     "\n".join("{}: {}".format(x[0], str(x[1])) for x in all_time_top_artists)
-    # )
+    last_week_top_artists = data[ListenField.ARTIST][TimeFrame.LAST_WEEK]
+    all_time_top_artists = data[ListenField.ARTIST][TimeFrame.ALL_TIME]
+    last_week_top_albums = data[ListenField.ALBUM][TimeFrame.LAST_WEEK]
+    all_time_top_albums = data[ListenField.ALBUM][TimeFrame.ALL_TIME]
+    last_week_top_songs = data[ListenField.SONG][TimeFrame.LAST_WEEK]
+    all_time_top_songs = data[ListenField.SONG][TimeFrame.ALL_TIME]
+    text_content = """
+        Your {} most played artists over the past week are:\n{}
+        Your {} most played artists of all time are:\n{}
+        Your {} most played albums over the past week are:\n{}
+        Your {} most played albums of all time are:\n{}
+        Your {} most played songs over the past week are:\n{}
+        Your {} most played songs of all time are:\n{}
+    """.format(
+        len(last_week_top_artists),
+        "\n".join("{}: {}".format(x[0], str(x[1])) for x in last_week_top_artists),
+        len(all_time_top_artists),
+        "\n".join("{}: {}".format(x[0], str(x[1])) for x in all_time_top_artists),
+        len(last_week_top_albums),
+        "\n".join("{}: {}".format(x[0], str(x[1])) for x in last_week_top_albums),
+        len(all_time_top_albums),
+        "\n".join("{}: {}".format(x[0], str(x[1])) for x in all_time_top_albums),
+        len(last_week_top_songs),
+        "\n".join("{}: {}".format(x[0], str(x[1])) for x in last_week_top_songs),
+        len(all_time_top_songs),
+        "\n".join("{}: {}".format(x[0], str(x[1])) for x in all_time_top_songs)
+    )
+    text_content = text_content.strip()
+    return "\n".join(map(str.strip, text_content.split("\n")))
 
 def generate_email():
     data = get_data()
+    print(get_text_content(data))
     return {
         "subject": get_email_subject(data[ListenField.ARTIST][TimeFrame.LAST_WEEK]),
         "html_content": get_html_content(data),
