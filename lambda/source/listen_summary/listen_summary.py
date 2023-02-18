@@ -6,6 +6,7 @@ import json
 import os
 from enum import Enum
 from os.path import dirname, abspath
+import functools
 
 BUCKET = "wjrm500-spotify"
 OBJECT_KEY = "play-history"
@@ -17,6 +18,7 @@ class ListenField(str, Enum):
     ALBUM = "album"
     SONG = "song"
 
+@functools.lru_cache(maxsize=None)
 def get_listen_history():
     print("Getting listen history from S3...")
     obj = s3.get_object(Bucket = BUCKET, Key = OBJECT_KEY)
@@ -38,15 +40,16 @@ def get_email_subject(last_week_top_artists):
         last_week_top_artists[2][0]
     )
 
-def get_html_content(last_week_top_artists, all_time_top_artists):
+def get_html_content():
     environment = jj2.Environment(loader = jj2.FileSystemLoader(dirname(abspath(__file__))))
-    template = environment.get_template("email_template.html")
-    return template.render(
-        x = [
-            ("over the past seven days", last_week_top_artists),
-            ("of all time", all_time_top_artists)
+    template = environment.get_template("new_email_template.html")
+    d = {}
+    for field in ListenField:
+        d[field] = [
+            ("over the past seven days", get_last_week_top_x(get_listen_history(), field)),
+            ("of all time", get_all_time_top_x(get_listen_history(), field))
         ]
-    )
+    return template.render(**d)
 
 def get_text_content(last_week_top_artists, all_time_top_artists):
     return "Your {} most played artists over the past week are:\n\n{}\n\nYour {} most played artists of all time are:{}".format(
@@ -62,7 +65,7 @@ def generate_email():
     last_week_top_artists = get_last_week_top_x(listen_history, ListenField.ARTIST)
     return {
         "subject": get_email_subject(last_week_top_artists),
-        "html_content": get_html_content(last_week_top_artists, all_time_top_artists),
+        "html_content": get_html_content(),
         "text_content": get_text_content(last_week_top_artists, all_time_top_artists)
     }
 

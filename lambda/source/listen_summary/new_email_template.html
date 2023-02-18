@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+    <body style="font-family: Arial">
+        <table border="0" cellspacing="0" cellpadding="0" width="100%">
+            <tr>
+                <td width="33%" valign="top">
+                    {% for timeframe, artists_list in artist %}
+                        <div>Your {{ artists_list|length }} most-played artists {{ timeframe }} are:</div>
+                        <br>
+                        <table border="0" cellspacing="0" cellpadding="0" width="100%">
+                            <tr>
+                                <td style="padding:2px; font-weight:bold;">Artist</td>
+                                <td style="padding:2px; font-weight:bold;">Plays</td>
+                            </tr>
+                            {% set ns = namespace(foo = false) %}
+                            {% for artist, plays in artists_list %}
+                                {% set ns.foo = not ns.foo %}
+                                <tr style="background-color: {{ 'lightgrey' if ns.foo else 'white' }}">
+                                    <td style="padding:2px">{{ artist }}</td>
+                                    <td style="padding:2px">{{ plays }}</td>
+                                </tr>
+                            {% endfor %}
+                        </table>
+                        <br>
+                    {% endfor %}
+                </td>
+                <td width="33%" valign="top">
+                    {% for timeframe, albums_list in album %}
+                        <div>Your {{ albums_list|length }} most-played albums {{ timeframe }} are:</div>
+                        <br>
+                        <table border="0" cellspacing="0" cellpadding="0" width="100%">
+                            <tr>
+                                <td style="padding:2px; font-weight:bold;">Album</td>
+                                <td style="padding:2px; font-weight:bold;">Plays</td>
+                            </tr>
+                            {% set ns = namespace(foo = false) %}
+                            {% for album, plays in albums_list %}
+                                {% set ns.foo = not ns.foo %}
+                                <tr style="background-color: {{ 'lightgrey' if ns.foo else 'white' }}">
+                                    <td style="padding:2px">{{ album }}</td>
+                                    <td style="padding:2px">{{ plays }}</td>
+                                </tr>
+                            {% endfor %}
+                        </table>
+                        <br>
+                    {% endfor %}
+                </td>
+                <td width="33%" valign="top">
+                    {% for timeframe, songs_list in song %}
+                        <div>Your {{ songs_list|length }} most-played songs {{ timeframe }} are:</div>
+                        <br>
+                        <table border="0" cellspacing="0" cellpadding="0" width="100%">
+                            <tr>
+                                <td style="padding:2px; font-weight:bold;">Song</td>
+                                <td style="padding:2px; font-weight:bold;">Plays</td>
+                            </tr>
+                            {% set ns = namespace(foo = false) %}
+                            {% for song, plays in songs_list %}
+                                {% set ns.foo = not ns.foo %}
+                                <tr style="background-color: {{ 'lightgrey' if ns.foo else 'white' }}">
+                                    <td style="padding:2px">{{ song }}</td>
+                                    <td style="padding:2px">{{ plays }}</td>
+                                </tr>
+                            {% endfor %}
+                        </table>
+                        <br>
+                    {% endfor %}
+                </td>
+            </tr>
+        </table>
+    </body>
+</html>
