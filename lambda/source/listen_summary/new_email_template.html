@@ -4,8 +4,8 @@
         <table border="0" cellspacing="0" cellpadding="0" width="100%">
             <tr>
                 <td width="32%" valign="top">
-                    {% for timeframe, artists_list in artist %}
-                        <div>Your {{ artists_list|length }} most-played artists {{ timeframe }} are:</div>
+                    {% for time_frame, artist_list in artist.items() %}
+                        <div>Your {{ artist_list|length }} most-played artists of {{ time_frame }} are:</div>
                         <br>
                         <table border="0" cellspacing="0" cellpadding="0" width="100%">
                             <tr>
@@ -13,7 +13,7 @@
                                 <td style="padding:2px; font-weight:bold;">Plays</td>
                             </tr>
                             {% set ns = namespace(foo = false) %}
-                            {% for artist, plays in artists_list %}
+                            {% for artist, plays in artist_list %}
                                 {% set ns.foo = not ns.foo %}
                                 <tr style="background-color: {{ 'lightgrey' if ns.foo else 'white' }}">
                                     <td style="padding:2px">{{ artist }}</td>
@@ -26,8 +26,8 @@
                 </td>
                 <td width="2%"></td>
                 <td width="32%" valign="top">
-                    {% for timeframe, albums_list in album %}
-                        <div>Your {{ albums_list|length }} most-played albums {{ timeframe }} are:</div>
+                    {% for time_frame, album_list in album.items() %}
+                        <div>Your {{ album_list|length }} most-played albums of {{ time_frame }} are:</div>
                         <br>
                         <table border="0" cellspacing="0" cellpadding="0" width="100%">
                             <tr>
@@ -35,7 +35,7 @@
                                 <td style="padding:2px; font-weight:bold;">Plays</td>
                             </tr>
                             {% set ns = namespace(foo = false) %}
-                            {% for album, plays in albums_list %}
+                            {% for album, plays in album_list %}
                                 {% set ns.foo = not ns.foo %}
                                 <tr style="background-color: {{ 'lightgrey' if ns.foo else 'white' }}">
                                     <td style="padding:2px">{{ album }}</td>
@@ -48,8 +48,8 @@
                 </td>
                 <td width="2%"></td>
                 <td width="32%" valign="top">
-                    {% for timeframe, songs_list in song %}
-                        <div>Your {{ songs_list|length }} most-played songs {{ timeframe }} are:</div>
+                    {% for time_frame, song_list in song.items() %}
+                        <div>Your {{ song_list|length }} most-played songs of {{ time_frame }} are:</div>
                         <br>
                         <table border="0" cellspacing="0" cellpadding="0" width="100%">
                             <tr>
@@ -57,7 +57,7 @@
                                 <td style="padding:2px; font-weight:bold;">Plays</td>
                             </tr>
                             {% set ns = namespace(foo = false) %}
-                            {% for song, plays in songs_list %}
+                            {% for song, plays in song_list %}
                                 {% set ns.foo = not ns.foo %}
                                 <tr style="background-color: {{ 'lightgrey' if ns.foo else 'white' }}">
                                     <td style="padding:2px">{{ song }}</td>
