@@ -1,17 +1,18 @@
-import boto3
+import os
+import json
+import functools
 from collections import Counter
 from datetime import datetime, timedelta
-import jinja2 as jj2
-import json
-import os
 from enum import Enum
 from os.path import dirname, abspath
-import functools
+import jinja2 as jj2
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
-BUCKET = "wjrm500-spotify"
-OBJECT_KEY = "play-history"
-s3 = boto3.client("s3")
-ses = boto3.client("ses")
+# Configuration via environment variables
+PLAY_HISTORY_FILE = os.environ.get("PLAY_HISTORY_FILE", "/data/play-history.json")
+EMAIL = os.environ.get("EMAIL", "your-email@example.com")
 
 how_many = 50
 
@@ -26,17 +27,23 @@ class TimeFrame(str, Enum):
 
 @functools.lru_cache(maxsize=None)
 def get_listen_history():
-    print("Getting listen history from S3...")
-    obj = s3.get_object(Bucket = BUCKET, Key = OBJECT_KEY)
-    listen_history = json.loads(obj["Body"].read().decode("utf-8"))
+    print("Getting listen history from local file...")
+    if not os.path.exists(PLAY_HISTORY_FILE):
+        print("Play history file does not exist, returning empty list.")
+        return []
+    with open(PLAY_HISTORY_FILE, "r", encoding="utf-8") as f:
+        listen_history = json.load(f)
     return listen_history
 
 def get_all_time_top_x(listen_history, x: ListenField):
     return Counter([listen[x] for listen in listen_history]).most_common(how_many)
 
 def get_last_week_top_x(listen_history, x: ListenField):
-    one_week_ago = datetime.now() - timedelta(days = 7)
-    last_week_listens = [listen for listen in listen_history if datetime.strptime(listen["datetime"], "%Y-%m-%d %H:%M:%S") > one_week_ago]
+    one_week_ago = datetime.now() - timedelta(days=7)
+    last_week_listens = [
+        listen for listen in listen_history 
+        if datetime.strptime(listen["datetime"], "%Y-%m-%d %H:%M:%S") > one_week_ago
+    ]
     return Counter([listen[x] for listen in last_week_listens]).most_common(how_many)
 
 def get_email_subject(last_week_top_artists):
@@ -64,7 +71,7 @@ def denumify_dict(d):
         return d
 
 def get_html_content(data):
-    environment = jj2.Environment(loader = jj2.FileSystemLoader(dirname(abspath(__file__))))
+    environment = jj2.Environment(loader=jj2.FileSystemLoader(dirname(abspath(__file__))))
     template = environment.get_template("email_template.html")
     data = denumify_dict(data)
     return template.render(**data)
@@ -108,32 +115,31 @@ def generate_email():
         "text_content": get_text_content(data)
     }
 
+def send_email(email):
+    # Using smtplib to send email via localhost (Postfix)
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = email["subject"]
+    msg["From"] = EMAIL
+    msg["To"] = EMAIL
+
+    part1 = MIMEText(email["text_content"], "plain")
+    part2 = MIMEText(email["html_content"], "html")
+    msg.attach(part1)
+    msg.attach(part2)
+
+    with smtplib.SMTP("localhost") as server:
+        server.sendmail(EMAIL, [EMAIL], msg.as_string())
+    print("Email sent successfully.")
+
 def preview():
     email = generate_email()
-    with open("email.html", "w") as f:
+    with open("email.html", "w", encoding="utf-8") as f:
         f.write(email["html_content"])
+    print("Preview written to email.html.")
 
-def handler(event, context):
+def main():
     email = generate_email()
-    ses.send_email(
-        Destination = {
-            "ToAddresses": [os.environ.get("email")]
-        },
-        Message = {
-            "Subject": {
-                "Data": email["subject"]
-            },
-            "Body": {
-                "Html": {
-                    "Data": email["html_content"]
-                },
-                "Text": {
-                    "Data": email["text_content"]
-                }
-            }
-        },
-        Source = os.environ.get("email")
-    )
+    send_email(email)
 
 if __name__ == "__main__":
-    preview()
+    main()

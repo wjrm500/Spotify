@@ -1,0 +1,17 @@
+FROM python:3.8-slim
+
+WORKDIR /app
+
+# Copy the unified requirements file and install dependencies.
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the updated load_listens script and required modules.
+COPY load_listens.py .
+COPY Spotify.py .
+COPY refresh.py .
+COPY secrets.py .
+
+ENV PLAY_HISTORY_FILE="/data/play-history.json"
+
+CMD ["python", "load_listens.py"]

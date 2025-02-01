@@ -1,0 +1,17 @@
+FROM python:3.8-slim
+
+WORKDIR /app
+
+# Copy the unified requirements file and install dependencies.
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the updated listen_summary code and email template.
+COPY listen_summary.py .
+COPY email_template.html .
+
+# Set environment variables (these can be overridden in docker-compose).
+ENV PLAY_HISTORY_FILE="/data/play-history.json"
+ENV EMAIL="your-email@example.com"
+
+CMD ["python", "listen_summary.py"]
