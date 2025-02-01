@@ -12,6 +12,6 @@ COPY email_template.html .
 
 # Set environment variables (these can be overridden in docker-compose).
 ENV PLAY_HISTORY_FILE="/data/spotify-play-history.json"
-ENV EMAIL="your-email@example.com"
+ENV EMAIL="wjrm500@gmail.com"
 
 CMD ["python", "listen_summary.py"]
