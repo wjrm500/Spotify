@@ -3,7 +3,7 @@ import json
 from Spotify import Spotify
 
 # Use the same local file path for play history; ensure that this volume is shared with listen_summary.
-PLAY_HISTORY_FILE = os.environ.get("PLAY_HISTORY_FILE", "/data/play-history.json")
+PLAY_HISTORY_FILE = os.environ.get("PLAY_HISTORY_FILE", "/data/spotify-play-history.json")
 spotify = Spotify()
 
 def load_listen_history():

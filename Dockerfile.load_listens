@@ -12,6 +12,6 @@ COPY Spotify.py .
 COPY refresh.py .
 COPY secrets.py .
 
-ENV PLAY_HISTORY_FILE="/data/play-history.json"
+ENV PLAY_HISTORY_FILE="/data/spotify-play-history.json"
 
 CMD ["python", "load_listens.py"]

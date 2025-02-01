@@ -74,20 +74,21 @@ On the server, create a Docker Compose file `spotify-docker-compose.yml` if it d
 version: "3.8"
 services:
   load_listens:
-    image: "your-dockerhub-username/load_listens:latest"
+    image: "wjrm500/load_listens:latest"
     environment:
-      - PLAY_HISTORY_FILE=/data/play-history.json
+      - PLAY_HISTORY_FILE=/data/spotify-play-history.json
     volumes:
-      - /home/AWSServer/data:/data
+      - /home/ServerConfig/data:/data
     restart: "no"
 
   listen_summary:
-    image: "your-dockerhub-username/listen_summary:latest"
+    image: "wjrm500/listen_summary:latest"
     environment:
-      - PLAY_HISTORY_FILE=/data/play-history.json
-      - EMAIL=your-email@example.com
+      - PLAY_HISTORY_FILE=/data/spotify-play-history.json
+      - EMAIL=wjrm500@gmail.com
     volumes:
-      - /home/AWSServer/data:/data
+      - /home/ServerConfig/data:/data
+    network_mode: "host"
     restart: "no"
 ```
 

@@ -11,7 +11,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 # Configuration via environment variables
-PLAY_HISTORY_FILE = os.environ.get("PLAY_HISTORY_FILE", "/data/play-history.json")
+PLAY_HISTORY_FILE = os.environ.get("PLAY_HISTORY_FILE", "/data/spotify-play-history.json")
 EMAIL = os.environ.get("EMAIL", "your-email@example.com")
 
 how_many = 50
