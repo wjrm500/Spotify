@@ -47,11 +47,23 @@ def get_last_week_top_x(listen_history, x: ListenField):
     return Counter([listen[x] for listen in last_week_listens]).most_common(how_many)
 
 def get_email_subject(last_week_top_artists):
-    return "Your Spotify weekly digest - featuring {}, {} and {}".format(
-        last_week_top_artists[0][0],
-        last_week_top_artists[1][0],
-        last_week_top_artists[2][0]
-    )
+    if len(last_week_top_artists) >= 3:
+        return "Your Spotify weekly digest - featuring {}, {} and {}".format(
+            last_week_top_artists[0][0],
+            last_week_top_artists[1][0],
+            last_week_top_artists[2][0]
+        )
+    elif len(last_week_top_artists) == 2:
+        return "Your Spotify weekly digest - featuring {} and {}".format(
+            last_week_top_artists[0][0],
+            last_week_top_artists[1][0]
+        )
+    elif len(last_week_top_artists) == 1:
+        return "Your Spotify weekly digest - featuring {}".format(
+            last_week_top_artists[0][0]
+        )
+    else:
+        return "Your Spotify weekly digest"
 
 def get_data():
     data = {}
