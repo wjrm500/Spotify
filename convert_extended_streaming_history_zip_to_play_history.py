@@ -31,7 +31,7 @@ def parse_streaming_history(folder):
             data = json.load(f)
             
             for entry in tqdm(data, desc=f"Reading {file}", unit="entry", leave=False):
-                if entry.get("master_metadata_track_name") and entry.get("master_metadata_album_artist_name"):
+                if (entry.get("master_metadata_track_name") and entry.get("master_metadata_album_artist_name") and entry.get("ms_played", 0) >= 10000):
                     listens.append({
                         "listen_id": generate_listen_id(entry),
                         "datetime": datetime.strptime(entry["ts"], "%Y-%m-%dT%H:%M:%SZ").strftime("%Y-%m-%d %H:%M:%S"),
