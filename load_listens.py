@@ -23,7 +23,7 @@ def update_listen_history(listen_history, recent_listens):
     listens_added = 0
     for recent_listen in reversed(recent_listens):
         if recent_listen["listen_id"] not in listen_history_ids:
-            listen_history.insert(0, recent_listen)
+            listen_history.append(recent_listen)
             listens_added += 1
     put_listen_history(listen_history)
     print(f"{listens_added} new listens added!")
