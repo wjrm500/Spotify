@@ -14,7 +14,9 @@ from email.mime.text import MIMEText
 PLAY_HISTORY_FILE = os.environ.get("PLAY_HISTORY_FILE", "/data/spotify-play-history.json")
 EMAIL = os.environ.get("EMAIL", "your-email@example.com")
 
-how_many = 50
+# Constants for item counts
+WEEKLY_TOP_COUNT = 10
+ALL_TIME_TOP_COUNT = 40
 
 class ListenField(str, Enum):
     ARTIST = "artist"
@@ -25,143 +27,250 @@ class TimeFrame(str, Enum):
     LAST_WEEK = "the past seven days"
     ALL_TIME = "all time"
 
-@functools.lru_cache(maxsize=None)
-def get_listen_history():
-    print("Getting listen history from local file...")
-    if not os.path.exists(PLAY_HISTORY_FILE):
-        print("Play history file does not exist, returning empty list.")
-        return []
-    with open(PLAY_HISTORY_FILE, "r", encoding="utf-8") as f:
-        listen_history = json.load(f)
-    return listen_history
+class ListenAnalyser:
+    """Class for analysing listening history and generating statistics"""
+    
+    @staticmethod
+    def get_listen_history():
+        """Load listening history from file"""
+        print("Getting listen history from local file...")
+        if not os.path.exists(PLAY_HISTORY_FILE):
+            print("Play history file does not exist, returning empty list.")
+            return []
+        with open(PLAY_HISTORY_FILE, "r", encoding="utf-8") as f:
+            listen_history = json.load(f)
+        return listen_history
+    
+    @staticmethod
+    def get_past_year_start():
+        """Get the date from exactly one year ago"""
+        return datetime.now() - timedelta(days=365)
+    
+    @staticmethod
+    def filter_by_timeframe(listen_history, timeframe):
+        """Filter listening history by timeframe"""
+        if timeframe == TimeFrame.ALL_TIME:
+            return listen_history
+        elif timeframe == TimeFrame.LAST_WEEK:
+            one_week_ago = datetime.now() - timedelta(days=7)
+            return [
+                listen for listen in listen_history 
+                if datetime.strptime(listen["datetime"], "%Y-%m-%d %H:%M:%S") > one_week_ago
+            ]
+    
+    @staticmethod
+    def get_artist_stats(listen_history, limit):
+        """Generate artist statistics with past year count"""
+        # Get basic counts
+        artist_counter = Counter([listen["artist"] for listen in listen_history])
+        top_artists = artist_counter.most_common(limit)
+        
+        # Get past year start date
+        past_year_start = ListenAnalyser.get_past_year_start()
+        
+        # Prepare result with past year count
+        result = []
+        for artist, total_count in top_artists:
+            # Count listens from past year
+            past_year_count = sum(
+                1 for listen in listen_history
+                if listen["artist"] == artist and 
+                datetime.strptime(listen["datetime"], "%Y-%m-%d %H:%M:%S") > past_year_start
+            )
+            
+            result.append({
+                "name": artist,
+                "total_count": total_count,
+                "past_year_count": past_year_count
+            })
+            
+        return result
+    
+    @staticmethod
+    def get_album_stats(listen_history, limit):
+        """Generate album statistics with past year count"""
+        # Count by album+artist combination
+        album_counter = Counter([(listen["album"], listen["artist"]) for listen in listen_history])
+        top_albums = album_counter.most_common(limit)
+        
+        # Get past year start date
+        past_year_start = ListenAnalyser.get_past_year_start()
+        
+        # Prepare result with past year count
+        result = []
+        for (album, artist), total_count in top_albums:
+            # Count listens from past year
+            past_year_count = sum(
+                1 for listen in listen_history
+                if listen["album"] == album and listen["artist"] == artist and
+                datetime.strptime(listen["datetime"], "%Y-%m-%d %H:%M:%S") > past_year_start
+            )
+            
+            result.append({
+                "name": album,
+                "artist": artist,
+                "total_count": total_count,
+                "past_year_count": past_year_count
+            })
+            
+        return result
+    
+    @staticmethod
+    def get_song_stats(listen_history, limit):
+        """Generate song statistics with past year count"""
+        # Count by song+artist combination
+        song_counter = Counter([(listen["song"], listen["artist"]) for listen in listen_history])
+        top_songs = song_counter.most_common(limit)
+        
+        # Get past year start date
+        past_year_start = ListenAnalyser.get_past_year_start()
+        
+        # Prepare result with past year count
+        result = []
+        for (song, artist), total_count in top_songs:
+            # Count listens from past year
+            past_year_count = sum(
+                1 for listen in listen_history
+                if listen["song"] == song and listen["artist"] == artist and
+                datetime.strptime(listen["datetime"], "%Y-%m-%d %H:%M:%S") > past_year_start
+            )
+            
+            result.append({
+                "name": song,
+                "artist": artist,
+                "total_count": total_count,
+                "past_year_count": past_year_count
+            })
+            
+        return result
+    
+    @staticmethod
+    def get_stats_for_timeframe(listen_history, field_type, timeframe):
+        """Get stats for a specific field and timeframe with appropriate count limit"""
+        filtered_history = ListenAnalyser.filter_by_timeframe(listen_history, timeframe)
+        limit = WEEKLY_TOP_COUNT if timeframe == TimeFrame.LAST_WEEK else ALL_TIME_TOP_COUNT
+        
+        if field_type == ListenField.ARTIST:
+            return ListenAnalyser.get_artist_stats(filtered_history, limit)
+        elif field_type == ListenField.ALBUM:
+            return ListenAnalyser.get_album_stats(filtered_history, limit)
+        elif field_type == ListenField.SONG:
+            return ListenAnalyser.get_song_stats(filtered_history, limit)
 
-def get_all_time_top_x(listen_history, x: ListenField):
-    if x == ListenField.ARTIST:
-        return Counter([listen[x] for listen in listen_history]).most_common(how_many)
-    else:
-        # For album and song, include artist
-        counts = Counter([(listen[x], listen["artist"]) for listen in listen_history])
-        return [(field_value, artist, count) for (field_value, artist), count in counts.most_common(how_many)]
-
-def get_last_week_top_x(listen_history, x: ListenField):
-    one_week_ago = datetime.now() - timedelta(days=7)
-    last_week_listens = [
-        listen for listen in listen_history 
-        if datetime.strptime(listen["datetime"], "%Y-%m-%d %H:%M:%S") > one_week_ago
-    ]
-    if x == ListenField.ARTIST:
-        return Counter([listen[x] for listen in last_week_listens]).most_common(how_many)
-    else:
-        # For album and song, include artist
-        counts = Counter([(listen[x], listen["artist"]) for listen in last_week_listens])
-        return [(field_value, artist, count) for (field_value, artist), count in counts.most_common(how_many)]
-
-def get_email_subject(last_week_top_artists):
-    if len(last_week_top_artists) >= 3:
-        return "Your Spotify weekly digest - featuring {}, {} and {}".format(
-            last_week_top_artists[0][0],
-            last_week_top_artists[1][0],
-            last_week_top_artists[2][0]
-        )
-    elif len(last_week_top_artists) == 2:
-        return "Your Spotify weekly digest - featuring {} and {}".format(
-            last_week_top_artists[0][0],
-            last_week_top_artists[1][0]
-        )
-    elif len(last_week_top_artists) == 1:
-        return "Your Spotify weekly digest - featuring {}".format(
-            last_week_top_artists[0][0]
-        )
-    else:
-        return "Your Spotify weekly digest"
-
-def get_data():
-    data = {}
-    for field in ListenField:
-        data[field] = {
-            TimeFrame.LAST_WEEK: get_last_week_top_x(get_listen_history(), field),
-            TimeFrame.ALL_TIME: get_all_time_top_x(get_listen_history(), field)
+class SpotifyDigest:
+    """Main class for generating Spotify digest emails"""
+    
+    def __init__(self):
+        self.analyser = ListenAnalyser()
+        self.listen_history = self.analyser.get_listen_history()
+        self.past_year_start = self.analyser.get_past_year_start()
+        print(f"Analysing data including past year (since {self.past_year_start.strftime('%d %b %Y')})")
+    
+    def get_email_subject(self, top_artists):
+        """Generate email subject based on top artists"""
+        if len(top_artists) >= 3:
+            return f"Your Spotify weekly digest - featuring {top_artists[0]['name']}, {top_artists[1]['name']} and {top_artists[2]['name']}"
+        elif len(top_artists) == 2:
+            return f"Your Spotify weekly digest - featuring {top_artists[0]['name']} and {top_artists[1]['name']}"
+        elif len(top_artists) == 1:
+            return f"Your Spotify weekly digest - featuring {top_artists[0]['name']}"
+        else:
+            return "Your Spotify weekly digest"
+    
+    def get_data(self):
+        """Prepare all data needed for the email template"""
+        data = {
+            "past_year_start": self.past_year_start.strftime("%d %b %Y"),
+            "weekly_count": WEEKLY_TOP_COUNT,
+            "all_time_count": ALL_TIME_TOP_COUNT,
+            "fields": {}
         }
-    return data
+        
+        # Process each field type (artist, album, song)
+        for field in ListenField:
+            field_data = {}
+            
+            # Process each timeframe (last week, all time)
+            for timeframe in TimeFrame:
+                # Generate stats for this field and timeframe
+                stats = self.analyser.get_stats_for_timeframe(
+                    self.listen_history, field, timeframe
+                )
+                field_data[timeframe.value] = stats
+            
+            data["fields"][field.value] = field_data
+        
+        return data
+    
+    def get_html_content(self, data):
+        """Generate HTML email content"""
+        environment = jj2.Environment(loader=jj2.FileSystemLoader(dirname(abspath(__file__))))
+        template = environment.get_template("email_template.html")
+        return template.render(**data)
+    
+    def get_text_content(self, data):
+        """Generate plain text email content"""
+        text_sections = []
+        
+        for field_name, field_data in data["fields"].items():
+            for timeframe, items in field_data.items():
+                count = WEEKLY_TOP_COUNT if timeframe == "the past seven days" else ALL_TIME_TOP_COUNT
+                section = f"Your top {count} {field_name}s of {timeframe} are:"
+                
+                for i, item in enumerate(items, 1):
+                    if field_name == "artist":
+                        line = f"{i}. {item['name']}: {item['total_count']} plays"
+                    else:
+                        line = f"{i}. {item['name']} by {item['artist']}: {item['total_count']} plays"
+                    
+                    # For all-time, add past year count
+                    if timeframe == "all time" and item['past_year_count'] > 0:
+                        line += f" ({item['past_year_count']} in past year)"
+                    
+                    section += f"\n{line}"
+                
+                text_sections.append(section)
+        
+        return "\n\n".join(text_sections)
+    
+    def generate_email(self):
+        """Generate complete email with subject, HTML, and text content"""
+        data = self.get_data()
+        last_week_artists = data["fields"]["artist"]["the past seven days"]
+        
+        return {
+            "subject": self.get_email_subject(last_week_artists),
+            "html_content": self.get_html_content(data),
+            "text_content": self.get_text_content(data)
+        }
+    
+    def send_email(self, email_data):
+        """Send email using local SMTP server"""
+        msg = MIMEMultipart("alternative")
+        msg["Subject"] = email_data["subject"]
+        msg["From"] = EMAIL
+        msg["To"] = EMAIL
 
-def denumify_dict(d):
-    if isinstance(d, dict):
-        return {denumify_dict(k): denumify_dict(v) for k, v in d.items()}
-    elif isinstance(d, Enum):
-        return d.value
-    else:
-        return d
+        part1 = MIMEText(email_data["text_content"], "plain")
+        part2 = MIMEText(email_data["html_content"], "html")
+        msg.attach(part1)
+        msg.attach(part2)
 
-def get_html_content(data):
-    environment = jj2.Environment(loader=jj2.FileSystemLoader(dirname(abspath(__file__))))
-    template = environment.get_template("email_template.html")
-    data = denumify_dict(data)
-    return template.render(**data)
+        with smtplib.SMTP("localhost") as server:
+            server.sendmail(EMAIL, [EMAIL], msg.as_string())
+        print("Email sent successfully.")
 
-def get_text_content(data):
-    last_week_top_artists = data[ListenField.ARTIST][TimeFrame.LAST_WEEK]
-    all_time_top_artists = data[ListenField.ARTIST][TimeFrame.ALL_TIME]
-    last_week_top_albums = data[ListenField.ALBUM][TimeFrame.LAST_WEEK]
-    all_time_top_albums = data[ListenField.ALBUM][TimeFrame.ALL_TIME]
-    last_week_top_songs = data[ListenField.SONG][TimeFrame.LAST_WEEK]
-    all_time_top_songs = data[ListenField.SONG][TimeFrame.ALL_TIME]
-    text_content = """
-        Your {} most played artists over the past week are:\n{}
-        Your {} most played artists of all time are:\n{}
-        Your {} most played albums over the past week are:\n{}
-        Your {} most played albums of all time are:\n{}
-        Your {} most played songs over the past week are:\n{}
-        Your {} most played songs of all time are:\n{}
-    """.format(
-        len(last_week_top_artists),
-        "\n".join("{}: {}".format(x[0], str(x[1])) for x in last_week_top_artists),
-        len(all_time_top_artists),
-        "\n".join("{}: {}".format(x[0], str(x[1])) for x in all_time_top_artists),
-        len(last_week_top_albums),
-        "\n".join("{} by {}: {}".format(x[0], x[1], str(x[2])) for x in last_week_top_albums),
-        len(all_time_top_albums),
-        "\n".join("{} by {}: {}".format(x[0], x[1], str(x[2])) for x in all_time_top_albums),
-        len(last_week_top_songs),
-        "\n".join("{} by {}: {}".format(x[0], x[1], str(x[2])) for x in last_week_top_songs),
-        len(all_time_top_songs),
-        "\n".join("{} by {}: {}".format(x[0], x[1], str(x[2])) for x in all_time_top_songs)
-    )
-    text_content = text_content.strip()
-    return "\n".join(map(str.strip, text_content.split("\n")))
-
-def generate_email():
-    data = get_data()
-    return {
-        "subject": get_email_subject(data[ListenField.ARTIST][TimeFrame.LAST_WEEK]),
-        "html_content": get_html_content(data),
-        "text_content": get_text_content(data)
-    }
-
-def send_email(email):
-    # Using smtplib to send email via localhost (Postfix)
-    msg = MIMEMultipart("alternative")
-    msg["Subject"] = email["subject"]
-    msg["From"] = EMAIL
-    msg["To"] = EMAIL
-
-    part1 = MIMEText(email["text_content"], "plain")
-    part2 = MIMEText(email["html_content"], "html")
-    msg.attach(part1)
-    msg.attach(part2)
-
-    with smtplib.SMTP("localhost") as server:
-        server.sendmail(EMAIL, [EMAIL], msg.as_string())
-    print("Email sent successfully.")
-
-def preview():
-    email = generate_email()
-    with open("email.html", "w", encoding="utf-8") as f:
-        f.write(email["html_content"])
-    print("Preview written to email.html.")
+    def preview(self):
+        """Generate preview HTML file"""
+        email_data = self.generate_email()
+        with open("email.html", "w", encoding="utf-8") as f:
+            f.write(email_data["html_content"])
+        print("Preview written to email.html.")
 
 def main():
-    email = generate_email()
-    send_email(email)
+    digest = SpotifyDigest()
+    email_data = digest.generate_email()
+    digest.send_email(email_data)
 
 if __name__ == "__main__":
     main()

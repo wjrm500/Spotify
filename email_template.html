@@ -1,37 +1,159 @@
 <!DOCTYPE html>
 <html>
-    <body style="font-family: Arial">
-        {% for field_name, field in [("Artist", artist), ("Album", album), ("Song", song)] %}
-            {% for time_frame, field_list in field.items() %}
-                <div>Your {{ field_list|length }} most-played {{ field_name|lower }}s of {{ time_frame }} are:</div>
-                <br>
-                <table border="0" cellspacing="0" cellpadding="0" style="width:100%; max-width:500px;">
-                    <tr>
-                        <td style="padding:2px">#</td>
-                        <td style="padding:2px; font-weight:bold;">{{ field_name }}</td>
-                        {% if field_name != "Artist" %}
-                            <td style="padding:2px; font-weight:bold;">Artist</td>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            colour: #333;
+            line-height: 1.5;
+            background-colour: #f9f9f9;
+        }
+        .container {
+            max-width: 650px;
+            margin: 20px auto;
+            padding: 20px;
+            background-colour: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .section {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .section:last-child {
+            border-bottom: none;
+        }
+        h3 {
+            margin: 0 0 15px 0;
+            font-size: 18px;
+            colour: #1DB954; /* Spotify green */
+            padding-bottom: 8px;
+            border-bottom: 2px solid #eee;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 14px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 2px 10px;
+            text-align: left;
+        }
+        th {
+            background-colour: #f2f2f2;
+            font-weight: 600;
+            colour: #555;
+            border-bottom: 1px solid #ddd;
+        }
+        .num {
+            width: 30px;
+            text-align: centre;
+            font-weight: 600;
+            colour: #888;
+        }
+        .plays {
+            text-align: right;
+            width: 50px;
+            font-weight: bold;
+            colour: #1DB954; /* Spotify green */
+        }
+        .pastYear {
+            text-align: right;
+            width: 70px;
+            colour: #666;
+            background-colour: #f9f9f9;
+            border-left: 1px solid #eee;
+        }
+        tr:nth-child(odd) {
+            background-colour: #f8f8f8;
+        }
+        tr:hover {
+            background-colour: #f2f7f2;
+        }
+        .intro {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-colour: #f1f9f1;
+            border-radius: 6px;
+            border-left: 4px solid #1DB954;
+        }
+        .footer {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+            font-size: 12px;
+            colour: #888;
+            text-align: centre;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="intro">
+            Your Spotify listening statistics, updated with your latest plays. This digest shows your listening trends from the past week and all time history.
+        </div>
+
+        {% for field_name, field_data in fields.items() %}
+            {% for time_frame, items in field_data.items() %}
+                <div class="section">
+                    <h3>
+                        {% if time_frame == "the past seven days" %}
+                            Your Top {{ weekly_count }} {{ field_name|capitalize }}s This Week
+                        {% else %}
+                            Your Top {{ all_time_count }} {{ field_name|capitalize }}s of All Time
                         {% endif %}
-                        <td style="padding:2px; font-weight:bold;">Plays</td>
-                    </tr>
-                    {% set ns = namespace(foo = false) %}
-                    {% for item in field_list %}
-                        {% set ns.foo = not ns.foo %}
-                        <tr style="background-color: {{ 'lightgrey' if ns.foo else 'white' }}">
-                            <td style="padding:2px">{{ loop.index }}</td>
-                            <td style="padding:2px">{{ item[0] }}</td>
-                            {% if field_name != "Artist" %}
-                                <td style="padding:2px">{{ item[1] }}</td>
-                                <td style="padding:2px">{{ item[2] }}</td>
-                            {% else %}
-                                <td style="padding:2px">{{ item[1] }}</td>
+                    </h3>
+                    <table>
+                        <tr>
+                            <th class="num">#</th>
+                            <th>{{ field_name|capitalize }}</th>
+                            {% if field_name != "artist" %}
+                                <th>Artist</th>
+                            {% endif %}
+                            <th class="plays">Plays</th>
+                            
+                            {% if time_frame == "all time" %}
+                                <th class="pastYear">Past Year</th>
                             {% endif %}
                         </tr>
-                    {% endfor %}
-                </table>
-                <br>
-                <br>
+                        
+                        {% for item in items %}
+                            <tr>
+                                <td class="num">{{ loop.index }}</td>
+                                <td>{{ item.name }}</td>
+                                {% if field_name != "artist" %}
+                                    <td>{{ item.artist }}</td>
+                                {% endif %}
+                                <td class="plays">{{ item.total_count }}</td>
+                                
+                                {% if time_frame == "all time" %}
+                                    <td class="pastYear">
+                                        {% if item.past_year_count > 0 %}
+                                            {{ item.past_year_count }}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                {% endif %}
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
             {% endfor %}
         {% endfor %}
-    </body>
+        
+        <div class="footer">
+            Past year data covers listens since {{ past_year_start }}. Generated by your personal Spotify stats tracker.
+        </div>
+    </div>
+</body>
 </html>
