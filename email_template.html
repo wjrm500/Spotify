@@ -94,6 +94,10 @@
             colour: #888;
             text-align: centre;
         }
+        .various {
+            font-style: italic;
+            colour: #777;
+        }
     </style>
 </head>
 <body>
@@ -131,7 +135,13 @@
                                 <td class="num">{{ loop.index }}</td>
                                 <td>{{ item.name }}</td>
                                 {% if field_name != "artist" %}
-                                    <td>{{ item.artist }}</td>
+                                    <td>
+                                        {% if item.is_various_artists %}
+                                            <span class="various">Various Artists</span>
+                                        {% else %}
+                                            {{ item.artist }}
+                                        {% endif %}
+                                    </td>
                                 {% endif %}
                                 <td class="plays">{{ item.total_count }}</td>
                                 

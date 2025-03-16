@@ -89,8 +89,30 @@ class ListenAnalyser:
     @staticmethod
     def get_album_stats(listen_history, limit):
         """Generate album statistics with past year count"""
-        # Count by album+artist combination
-        album_counter = Counter([(listen["album"], listen["artist"]) for listen in listen_history])
+        # First identify albums with multiple artists
+        album_artists = {}
+        for listen in listen_history:
+            album = listen["album"]
+            artist = listen["artist"]
+            if album not in album_artists:
+                album_artists[album] = set()
+            album_artists[album].add(artist)
+        
+        # Create a new counter for albums, handling various artists
+        album_play_counter = {}
+        for listen in listen_history:
+            album = listen["album"]
+            if len(album_artists[album]) > 1:
+                # Multiple artists - count as "Various Artists"
+                key = (album, "Various Artists")
+            else:
+                # Single artist
+                key = (album, listen["artist"])
+            
+            album_play_counter[key] = album_play_counter.get(key, 0) + 1
+        
+        # Convert to counter for most_common
+        album_counter = Counter(album_play_counter)
         top_albums = album_counter.most_common(limit)
         
         # Get past year start date
@@ -99,20 +121,31 @@ class ListenAnalyser:
         # Prepare result with past year count
         result = []
         for (album, artist), total_count in top_albums:
-            # Count listens from past year
-            past_year_count = sum(
-                1 for listen in listen_history
-                if listen["album"] == album and listen["artist"] == artist and
-                datetime.strptime(listen["datetime"], "%Y-%m-%d %H:%M:%S") > past_year_start
-            )
+            # For past year count, need to consider if it's a various artists album
+            if artist == "Various Artists":
+                # Count past year plays for this album, any artist
+                past_year_count = sum(
+                    1 for listen in listen_history
+                    if listen["album"] == album and
+                    datetime.strptime(listen["datetime"], "%Y-%m-%d %H:%M:%S") > past_year_start
+                )
+            else:
+                # Count past year plays for this specific album+artist
+                past_year_count = sum(
+                    1 for listen in listen_history
+                    if listen["album"] == album and listen["artist"] == artist and
+                    datetime.strptime(listen["datetime"], "%Y-%m-%d %H:%M:%S") > past_year_start
+                )
             
+            is_various = artist == "Various Artists"
             result.append({
                 "name": album,
                 "artist": artist,
+                "is_various_artists": is_various,
                 "total_count": total_count,
                 "past_year_count": past_year_count
             })
-            
+        
         return result
     
     @staticmethod
