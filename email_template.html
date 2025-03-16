@@ -5,19 +5,27 @@
             {% for time_frame, field_list in field.items() %}
                 <div>Your {{ field_list|length }} most-played {{ field_name|lower }}s of {{ time_frame }} are:</div>
                 <br>
-                <table border="0" cellspacing="0" cellpadding="0" width="300px">
+                <table border="0" cellspacing="0" cellpadding="0" style="width:100%; max-width:500px;">
                     <tr>
                         <td style="padding:2px">#</td>
                         <td style="padding:2px; font-weight:bold;">{{ field_name }}</td>
+                        {% if field_name != "Artist" %}
+                            <td style="padding:2px; font-weight:bold;">Artist</td>
+                        {% endif %}
                         <td style="padding:2px; font-weight:bold;">Plays</td>
                     </tr>
                     {% set ns = namespace(foo = false) %}
-                    {% for field_value, plays in field_list %}
+                    {% for item in field_list %}
                         {% set ns.foo = not ns.foo %}
                         <tr style="background-color: {{ 'lightgrey' if ns.foo else 'white' }}">
                             <td style="padding:2px">{{ loop.index }}</td>
-                            <td style="padding:2px">{{ field_value }}</td>
-                            <td style="padding:2px">{{ plays }}</td>
+                            <td style="padding:2px">{{ item[0] }}</td>
+                            {% if field_name != "Artist" %}
+                                <td style="padding:2px">{{ item[1] }}</td>
+                                <td style="padding:2px">{{ item[2] }}</td>
+                            {% else %}
+                                <td style="padding:2px">{{ item[1] }}</td>
+                            {% endif %}
                         </tr>
                     {% endfor %}
                 </table>

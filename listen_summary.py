@@ -36,7 +36,12 @@ def get_listen_history():
     return listen_history
 
 def get_all_time_top_x(listen_history, x: ListenField):
-    return Counter([listen[x] for listen in listen_history]).most_common(how_many)
+    if x == ListenField.ARTIST:
+        return Counter([listen[x] for listen in listen_history]).most_common(how_many)
+    else:
+        # For album and song, include artist
+        counts = Counter([(listen[x], listen["artist"]) for listen in listen_history])
+        return [(field_value, artist, count) for (field_value, artist), count in counts.most_common(how_many)]
 
 def get_last_week_top_x(listen_history, x: ListenField):
     one_week_ago = datetime.now() - timedelta(days=7)
@@ -44,7 +49,12 @@ def get_last_week_top_x(listen_history, x: ListenField):
         listen for listen in listen_history 
         if datetime.strptime(listen["datetime"], "%Y-%m-%d %H:%M:%S") > one_week_ago
     ]
-    return Counter([listen[x] for listen in last_week_listens]).most_common(how_many)
+    if x == ListenField.ARTIST:
+        return Counter([listen[x] for listen in last_week_listens]).most_common(how_many)
+    else:
+        # For album and song, include artist
+        counts = Counter([(listen[x], listen["artist"]) for listen in last_week_listens])
+        return [(field_value, artist, count) for (field_value, artist), count in counts.most_common(how_many)]
 
 def get_email_subject(last_week_top_artists):
     if len(last_week_top_artists) >= 3:
@@ -108,13 +118,13 @@ def get_text_content(data):
         len(all_time_top_artists),
         "\n".join("{}: {}".format(x[0], str(x[1])) for x in all_time_top_artists),
         len(last_week_top_albums),
-        "\n".join("{}: {}".format(x[0], str(x[1])) for x in last_week_top_albums),
+        "\n".join("{} by {}: {}".format(x[0], x[1], str(x[2])) for x in last_week_top_albums),
         len(all_time_top_albums),
-        "\n".join("{}: {}".format(x[0], str(x[1])) for x in all_time_top_albums),
+        "\n".join("{} by {}: {}".format(x[0], x[1], str(x[2])) for x in all_time_top_albums),
         len(last_week_top_songs),
-        "\n".join("{}: {}".format(x[0], str(x[1])) for x in last_week_top_songs),
+        "\n".join("{} by {}: {}".format(x[0], x[1], str(x[2])) for x in last_week_top_songs),
         len(all_time_top_songs),
-        "\n".join("{}: {}".format(x[0], str(x[1])) for x in all_time_top_songs)
+        "\n".join("{} by {}: {}".format(x[0], x[1], str(x[2])) for x in all_time_top_songs)
     )
     text_content = text_content.strip()
     return "\n".join(map(str.strip, text_content.split("\n")))
