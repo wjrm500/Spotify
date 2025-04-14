@@ -6,13 +6,13 @@ from datetime import datetime, timedelta
 from enum import Enum
 from os.path import dirname, abspath
 import jinja2 as jj2
-import smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
+import brevo_python
+from brevo_python.rest import ApiException
 
 # Configuration via environment variables
 PLAY_HISTORY_FILE = os.environ.get("PLAY_HISTORY_FILE", "/data/spotify-play-history.json")
 EMAIL = os.environ.get("EMAIL", "your-email@example.com")
+BREVO_API_KEY = os.environ.get("BREVO_API_KEY")
 
 # Constants for item counts
 WEEKLY_TOP_COUNT = 10
@@ -194,6 +194,22 @@ class SpotifyDigest:
     """Main class for generating Spotify digest emails"""
     
     def __init__(self):
+        self.brevo_enabled = False
+        if not EMAIL:
+             print("Error: EMAIL environment variable not set. Cannot determine sender/recipient.")
+        elif not BREVO_API_KEY:
+             print("Error: BREVO_API_KEY environment variable not set. Email sending disabled.")
+        else:
+             try:
+                 self.configuration = brevo_python.Configuration()
+                 self.configuration.api_key['api-key'] = BREVO_API_KEY
+                 self.api_client = brevo_python.ApiClient(self.configuration)
+                 self.api_instance = brevo_python.TransactionalEmailsApi(self.api_client)
+                 self.brevo_enabled = True
+                 print("Brevo API client configured.")
+             except Exception as e:
+                 print(f"Error configuring Brevo client: {e}")
+
         self.analyser = ListenAnalyser()
         self.listen_history = self.analyser.get_listen_history()
         self.past_year_start = self.analyser.get_past_year_start()
@@ -278,20 +294,25 @@ class SpotifyDigest:
         }
     
     def send_email(self, email_data):
-        """Send email using local SMTP server"""
-        msg = MIMEMultipart("alternative")
-        msg["Subject"] = email_data["subject"]
-        msg["From"] = EMAIL
-        msg["To"] = EMAIL
+        """Send email using Brevo API if enabled"""
+        if not self.brevo_enabled:
+            print("Skipping email send: Brevo is disabled due to missing configuration.")
+            return
 
-        part1 = MIMEText(email_data["text_content"], "plain")
-        part2 = MIMEText(email_data["html_content"], "html")
-        msg.attach(part1)
-        msg.attach(part2)
+        print(f"Attempting to send email via Brevo to {EMAIL}...")
+        send_smtp_email = brevo_python.SendSmtpEmail(
+            sender={"email": EMAIL},
+            to=[{"email": EMAIL}],
+            subject=email_data["subject"],
+            html_content=email_data["html_content"],
+            text_content=email_data["text_content"],
+        )
 
-        with smtplib.SMTP("localhost") as server:
-            server.sendmail(EMAIL, [EMAIL], msg.as_string())
-        print("Email sent successfully.")
+        try:
+            api_response = self.api_instance.send_transac_email(send_smtp_email)
+            print(f"Email sent successfully via Brevo. Message ID: {api_response.message_id}")
+        except ApiException as e:
+            print(f"Error sending email via Brevo: {e}")
 
     def preview(self):
         """Generate preview HTML file"""
